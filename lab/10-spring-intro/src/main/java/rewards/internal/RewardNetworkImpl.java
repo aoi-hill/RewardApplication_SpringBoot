@@ -1,11 +1,16 @@
 package rewards.internal;
 
+import rewards.AccountContribution;
 import rewards.Dining;
 import rewards.RewardConfirmation;
 import rewards.RewardNetwork;
+import rewards.internal.account.Account;
 import rewards.internal.account.AccountRepository;
+import rewards.internal.restaurant.Restaurant;
 import rewards.internal.restaurant.RestaurantRepository;
 import rewards.internal.reward.RewardRepository;
+
+import common.money.MonetaryAmount;
 
 /**
  * Rewards an Account for Dining at a Restaurant.
@@ -52,7 +57,13 @@ public class RewardNetworkImpl implements RewardNetwork {
 	public RewardConfirmation rewardAccountFor(Dining dining) {
 		// TODO-07: Write code here for rewarding an account according to
 		//          the sequence diagram in the lab document
+		Account acc = accountRepository.findByCreditCard(dining.getCreditCardNumber());
+		Restaurant res = restaurantRepository.findByMerchantNumber(dining.getMerchantNumber());
+		MonetaryAmount amt = res.calculateBenefitFor(acc, dining);
+		AccountContribution cur = acc.makeContribution(amt);
+		RewardConfirmation conf = rewardRepository.confirmReward(cur, dining);
+		accountRepository.updateBeneficiaries(acc);
 		// TODO-08: Return the corresponding reward confirmation
-		return null;
+		return conf;
 	}
 }
